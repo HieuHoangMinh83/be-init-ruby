@@ -2,12 +2,12 @@ Rails.application.routes.draw do
   namespace :v1 do
     resources :users do
       member do
-        get "details"
-        post "activate"
+        get 'details'
+        post 'activate'
       end
       collection do
-        get "recent"
-        get "search"
+        get 'recent'
+        get 'search'
       end
     end
 
@@ -15,6 +15,7 @@ Rails.application.routes.draw do
       collection do
         post :login
         post :register
+        get :info
       end
       member do
         post :activate

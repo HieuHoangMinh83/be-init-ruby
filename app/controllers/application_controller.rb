@@ -9,11 +9,11 @@ class ApplicationController < ActionController::API
     header = request.headers["Authorization"]
     token = header.split(" ").last if header.present?
 
-    begin
-      decoded = JWT.decode(token, Rails.application.secrets.secret_key_base)[0]
-      @current_user = User.find(decoded["user_id"])
-    rescue JWT::DecodeError, ActiveRecord::RecordNotFound
-      render json: { error: "Unauthorized" }, status: :unauthorized
-    end
+    decoded = token.present? ? JsonWebToken.decode_access_token(token) : nil
+    return render json: { error: "Unauthorized" }, status: :unauthorized unless decoded&.dig(:user_id)
+
+    user = User.find_by(id: decoded[:user_id])
+    @current_user = user.attributes.except("password", "refresh_token")
+    render json: { error: "Unauthorized" }, status: :unauthorized unless @current_user.present?
   end
 end
