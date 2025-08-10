@@ -64,3 +64,4 @@ spec/examples.txt
 # ---------------------------------
 .rbs_collection/
 .rbs_collection.lock.yaml
+.gem_rbs_collection/
