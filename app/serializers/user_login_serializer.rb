@@ -1,4 +1,4 @@
-class V1::User::UserLoginSerializer < ActiveModel::Serializer
+class UserLoginSerializer < ActiveModel::Serializer
   attributes :id, :email, :full_name, :role, :active
 
   def full_name

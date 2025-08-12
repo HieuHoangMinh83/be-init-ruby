@@ -4,7 +4,7 @@ class V1::AuthController < ApplicationController
   skip_before_action :authenticate_request, only: %i[login register]
 
   def login
-    dto = UserDto::UserLoginDto.new(login_params)
+    dto = UserLoginDto.new(login_params)
     return render json: { errors: dto.errors.full_messages }, status: :unprocessable_entity unless dto.valid?
 
     user = User.find_by(email: dto.email.to_s.downcase)
@@ -19,10 +19,11 @@ class V1::AuthController < ApplicationController
     access_token = JsonWebToken.generate_access_token(user_id: user.id)
     refresh_token = JsonWebToken.generate_refresh_token(user_id: user.id)
     user.update!(refresh_token: refresh_token)
+
     render json: {
       access_token: access_token,
       refresh_token: refresh_token,
-      user: V1::User::UserLoginSerializer.new(user),
+      user: UserLoginSerializer.new(user),
     }, status: :ok
   end
 
@@ -39,7 +40,7 @@ class V1::AuthController < ApplicationController
   end
 
   def register
-    dto = UserDto::UserRegistrationDto.new(user_params.to_h)
+    dto = UserRegistrationDto.new(user_params.to_h)
 
     return render json: { errors: dto.errors.full_messages }, status: :unprocessable_entity unless dto.valid?
 
