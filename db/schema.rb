@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_08_100302) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_13_024906) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -38,7 +38,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_08_100302) do
     t.string "password", null: false
     t.string "refresh_token"
     t.string "role"
-    t.string "rails"
+    t.boolean "confirm_email", default: false, null: false
+    t.datetime "confirm_email_at"
+    t.index ["email"], name: "index_users_on_email", unique: true
   end
 
 end

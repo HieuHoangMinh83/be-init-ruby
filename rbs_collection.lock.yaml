@@ -165,6 +165,14 @@ gems:
   version: '0'
   source:
     type: stdlib
+- name: faker
+  version: 3.4.2
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 95238acb45d456d452bd791d9c72909adb4fcf96
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
 - name: ffi
   version: 1.17.2
   source:

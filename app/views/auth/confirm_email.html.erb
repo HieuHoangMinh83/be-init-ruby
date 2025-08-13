@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác thực Email</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Xác thực Email</h1>
+        
+        <% if @success %>
+            <div class="success">
+                <h2>✅ Xác thực thành công!</h2>
+                <p>Tài khoản của bạn đã được xác thực thành công.</p>
+                <p>Bây giờ bạn có thể đăng nhập vào hệ thống.</p>
+                <a href="/" class="btn">Về trang chủ</a>
+            </div>
+        <% else %>
+            <div class="error">
+                <h2>❌ Xác thực thất bại</h2>
+                <p><%= @error_message || "Có lỗi xảy ra trong quá trình xác thực." %></p>
+                <p>Vui lòng thử lại hoặc liên hệ hỗ trợ.</p>
+                <a href="/" class="btn">Về trang chủ</a>
+            </div>
+        <% end %>
+    </div>
+</body>
+</html> 

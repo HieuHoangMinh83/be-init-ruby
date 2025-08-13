@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kích hoạt tài khoản - Task Manager</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .app-intro {
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .app-intro h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 20px;
+        }
+        .app-intro p {
+            margin: 0;
+            color: #555;
+        }
+        .activation-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .btn-activate {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            cursor: pointer;
+            border: none;
+        }
+        .btn-activate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        .token-info {
+            background-color: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .token-code {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            padding: 8px 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #495057;
+            word-break: break-all;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+            border-top: 1px solid #dee2e6;
+        }
+        .features {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        .feature {
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+            margin: 10px;
+        }
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .feature h4 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        .feature p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Task Manager</h1>
+        </div>
+        
+        <div class="content">
+            <div class="greeting">
+                <strong>Xin chào <%= @user.fullName || @user.email %>,</strong>
+            </div>
+            
+            <p>Chào mừng bạn đến với <strong>Task Manager</strong> - ứng dụng quản lý công việc hiệu quả được xây dựng trên nền tảng Rails!</p>
+            
+            <div class="app-intro">
+                <h3>🚀 Giới thiệu về ứng dụng</h3>
+                <p>Task Manager giúp bạn tổ chức và quản lý công việc một cách thông minh với các tính năng:</p>
+            </div>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">📝</div>
+                    <h4>Tạo Task</h4>
+                    <p>Dễ dàng tạo và quản lý công việc</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⏰</div>
+                    <h4>Deadline</h4>
+                    <p>Theo dõi thời hạn hoàn thành</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h4>Báo cáo</h4>
+                    <p>Thống kê tiến độ công việc</p>
+                </div>
+            </div>
+            
+            <div class="activation-section">
+                <p><strong>Để bắt đầu sử dụng Task Manager, vui lòng kích hoạt tài khoản của bạn:</strong></p>
+                
+                <form action="<%= @confirm_url %>" method="get" style="display: inline;">
+                    <input type="hidden" name="token" value="<%= @token %>">
+                    <button type="submit" class="btn-activate">
+                        ✅ Kích hoạt tài khoản
+                    </button>
+                </form>
+            </div>
+            
+            
+            <p style="text-align: center; color: #6c757d; font-size: 14px;">
+                ⚠️ Nếu bạn không đăng ký tài khoản này, vui lòng bỏ qua email này.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>© 2024 Task Manager - Ứng dụng quản lý công việc hiệu quả</p>
+            <p>Được xây dựng với ❤️ bằng Ruby on Rails</p>
+        </div>
+    </div>
+</body>
+</html>

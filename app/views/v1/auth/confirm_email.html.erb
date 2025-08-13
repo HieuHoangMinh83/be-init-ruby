@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác thực Email - Blog System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 50px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+            animation: bounce 2s infinite;
+        }
+
+        .success .icon {
+            color: #28a745;
+        }
+
+        .error .icon {
+            color: #dc3545;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .message {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .success .status-badge {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error .status-badge {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .details {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .details h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .details p {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .icon {
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container <%= @success ? 'success' : 'error' %>">
+        <% if @success %>
+            <div class="status-badge">
+                <i class="fas fa-check-circle"></i> Thành công
+            </div>
+            <div class="icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h1>Xác thực Email Thành công!</h1>
+            <div class="message">
+                <p>Tài khoản của bạn đã được xác thực thành công.</p>
+                <p>Bây giờ bạn có thể đăng nhập vào hệ thống và sử dụng tất cả tính năng.</p>
+            </div>
+            
+            <div class="details">
+                <h3><i class="fas fa-info-circle"></i> Thông tin tài khoản</h3>
+                <p><strong>Trạng thái:</strong> Đã kích hoạt</p>
+                <p><strong>Thời gian xác thực:</strong> <%= Time.current.strftime("%d/%m/%Y %H:%M") %></p>
+            </div>
+            
+            <a href="/" class="btn">
+                <i class="fas fa-home"></i> Về trang chủ
+            </a>
+        <% else %>
+            <div class="status-badge">
+                <i class="fas fa-exclamation-triangle"></i> Lỗi
+            </div>
+            <div class="icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <h1>Xác thực Email Thất bại</h1>
+            <div class="message">
+                <p><%= @error_message || "Có lỗi xảy ra trong quá trình xác thực email." %></p>
+                <p>Vui lòng kiểm tra lại link hoặc liên hệ hỗ trợ để được trợ giúp.</p>
+            </div>
+            
+            <div class="details">
+                <h3><i class="fas fa-lightbulb"></i> Gợi ý</h3>
+                <p>• Kiểm tra xem link có đầy đủ không</p>
+                <p>• Link có thể đã hết hạn (15 phút)</p>
+                <p>• Thử đăng ký lại hoặc yêu cầu gửi email mới</p>
+            </div>
+            
+            <a href="/" class="btn">
+                <i class="fas fa-home"></i> Về trang chủ
+            </a>
+        <% end %>
+    </div>
+</body>
+</html> 
