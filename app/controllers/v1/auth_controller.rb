@@ -4,7 +4,7 @@ class V1::AuthController < ApplicationController
   skip_before_action :authenticate_request, only: %i[login register confirm_email]
 
   def login
-    dto = UserDto::UserLoginDto.new(login_params)
+    dto = UserLoginDto.new(login_params)
     return render_error(errors: dto.errors.full_messages, status: :unprocessable_entity) unless dto.valid?
 
     user = User.find_by(email: dto.email.to_s.downcase)
@@ -32,7 +32,7 @@ class V1::AuthController < ApplicationController
       data: {
         access_token: access_token,
         refresh_token: refresh_token,
-        user: V1::User::UserLoginSerializer.new(user),
+        user: UserLoginSerializer.new(user),
       },
       message: "Đăng nhập thành công",
     )
@@ -81,7 +81,6 @@ class V1::AuthController < ApplicationController
             email: user.email,
             full_name: user.fullName,
             role: user.role,
-            active: user.active,
           },
         },
         message: "Tạo user thành công, vui lòng kiểm tra email để xác thực tài khoản",
