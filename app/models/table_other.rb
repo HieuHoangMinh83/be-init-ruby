@@ -1,0 +1,2 @@
+class TableOther < ApplicationRecord
+end

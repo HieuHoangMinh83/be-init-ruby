@@ -13,7 +13,15 @@ class V1::AuthController < ApplicationController
       return render_error(message: "Email hoặc mật khẩu không đúng", status: :unauthorized)
     end
 
-    return render_error(message: "Tài khoản chưa được kích hoạt", status: :forbidden) unless user.active
+    # Kiểm tra xác thực email cho tất cả users
+    unless user.email_confirmed?
+      return render_error(message: "Vui lòng xác thực email trước khi đăng nhập", status: :forbidden)
+    end
+
+    # Kiểm tra active chỉ cho admin
+    if user.role == "admin" && !user.active
+      return render_error(message: "Tài khoản admin chưa được kích hoạt", status: :forbidden)
+    end
 
     # Access token hết hạn sau 15 phút (dùng helper JsonWebToken để đồng bộ mã hóa/giải mã)
     access_token = JsonWebToken.generate_access_token(user_id: user.id)
