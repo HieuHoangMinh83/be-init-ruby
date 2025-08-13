@@ -30,10 +30,4 @@ class JsonWebToken
   rescue JWT::DecodeError
     raise StandardError, "Invalid refresh token"
   end
-
-  def self.test_functionality(token)
-    # This is a placeholder for any test methods you might want to implement
-    # to ensure the functionality of the JsonWebToken service.
-    puts "JsonWebToken service is working correctly."
-  end
 end

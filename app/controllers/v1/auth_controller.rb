@@ -46,7 +46,7 @@ class V1::AuthController < ApplicationController
   end
 
   def register
-    dto = UserDto::UserRegistrationDto.new(user_params.to_h)
+    dto = UserRegistrationDto.new(user_params.to_h)
 
     return render_error(errors: dto.errors.full_messages, status: :unprocessable_entity) unless dto.valid?
 
