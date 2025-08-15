@@ -10,7 +10,7 @@ Rails.application.routes.draw do
         get "search"
       end
     end
-
+    resources :user_setting, only: [:update]
     resources :auth, only: [] do
       collection do
         get :confirm_email
@@ -24,5 +24,6 @@ Rails.application.routes.draw do
         post :activate
       end
     end
+    resources :projects
   end
 end

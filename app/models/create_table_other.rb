@@ -1,2 +1,0 @@
-class CreateTableOther < ApplicationRecord
-end

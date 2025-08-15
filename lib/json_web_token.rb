@@ -1,6 +1,6 @@
 # app/services/json_web_token.rb
 class JsonWebToken
-  ACCESS_EXPIRY = 15.minutes
+  ACCESS_EXPIRY = 1.days
   REFRESH_EXPIRY = 7.days
 
   def self.generate_access_token(payload)

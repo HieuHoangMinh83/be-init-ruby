@@ -3,12 +3,12 @@ class UserMailer < ApplicationMailer
 
   default from: ENV.fetch("GMAIL_USERNAME", "no-reply@example.com")
 
-  def confirmation_email(user)
+  def confirmation_email(user, token)
     @user = user
-    @token = user.generate_email_confirmation_token
+    @token = token
     base_url = ENV.fetch("BASE_URL", "http://localhost:3000")
 
-    @confirm_url = "#{base_url}/v1/auth/confirm_email"
+    @confirm_url = "#{base_url}/v1/auth/confirm_email?token=#{@token}"
 
     mail(to: @user.email, subject: "Xác thực tài khoản của bạn")
   end

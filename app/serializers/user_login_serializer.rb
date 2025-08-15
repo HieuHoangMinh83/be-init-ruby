@@ -1,7 +1,7 @@
 class UserLoginSerializer < ActiveModel::Serializer
-  attributes :id, :email, :full_name, :role, :active
+  attributes :email, :full_name, :role, :age, :created_at
 
   def full_name
-    object.fullName # Nếu DB của bạn là fullName, map về full_name cho JSON
+    object.fullName
   end
 end
