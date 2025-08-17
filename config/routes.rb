@@ -24,6 +24,10 @@ Rails.application.routes.draw do
         post :activate
       end
     end
-    resources :projects
+    resources :projects do
+      collection do
+        get "own_project"
+      end
+    end
   end
 end

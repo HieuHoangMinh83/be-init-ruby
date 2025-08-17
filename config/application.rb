@@ -28,10 +28,9 @@ module Blog
     # Thêm autoload cho thư mục app/dto
     config.autoload_paths += %W[#{config.root}/app/dto]
     config.autoload_paths += %W[#{config.root}/app/dto/user]
-    # Autoload lib so JsonWebToken có thể được tìm thấy
     config.autoload_paths += %W[#{config.root}/lib]
     # Eager load lib cho môi trường production/test (Zeitwerk)
-    config.eager_load_paths << Rails.root.join('lib')
+    config.eager_load_paths << Rails.root.join("lib")
 
     # Thêm middleware rack-cors vào
     config.middleware.insert_before 0, Rack::Cors do

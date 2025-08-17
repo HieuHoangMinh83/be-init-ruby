@@ -1,26 +1,34 @@
 class V1::ProjectsController < ApplicationController
   def index
     projects = Project.all
-    render_success(data: projects, message: "Projects retrieved successfully")
-  end
-
-  def show
-    project = Project.find(params[:id])
-    render_success(data: project, message: "Project retrieved successfully")
+    ResponseHandle.render_success(self, data: projects, message: "Projects retrieved successfully")
   end
 
   def create
-    project_dto = ProjectDto.new(project_params)
-    unless project_dto.valid?
-      return render_error(errors: project_dto.errors.full_messages, status: :unprocessable_entity)
+    ProjectsHandle.create_project_and_return(project_params, current_user)
+  end
+
+  def update
+    project = Project.where(id: params[:ids], user_id: current_user.id)
+    if project.empty?
+      ResponseHandle.render_error(self, message: "Project not found", status: :not_found)
+    else
+      ProjectsHandle.update_project_and_return(project_params, project)
     end
-    project = Project.new(
-      name: project_dto.name,
-      description: project_dto.description,
-      owner_id: current_user.id,
-    )
-    project.save!
-    render_success(data: project, message: "Project created successfully", status: :created)
+  end
+
+  def destroy
+    project = Project.where(id: params[:ids], user_id: current_user.id)
+    if project.empty?
+      ResponseHandle.render_error(self, message: "Project not found", status: :not_found)
+    else
+      ProjectsHandle.destroy_project_and_return(project.first)
+    end
+  end
+
+  def own_project
+    projects = current_user.projects
+    ResponseHandle.render_success(self, data: projects, message: "Own projects retrieved successfully")
   end
 
   private

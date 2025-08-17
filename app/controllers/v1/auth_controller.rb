@@ -5,34 +5,24 @@ class V1::AuthController < ApplicationController
 
   def login
     dto = UserLoginDto.new(login_params)
-    return render_error(errors: dto.errors.full_messages, status: :unprocessable_entity) unless dto.valid?
 
-    user = User.find_by(email: dto.email.to_s.downcase)
-
-    unless user && authenticate_user(user, dto.password)
-      return render_error(message: "Email hoặc mật khẩu không đúng", status: :unauthorized)
+    # Validate user credentials
+    validation_result = UsersHandle.validate_user_login(dto)
+    if !validation_result[:success]
+      return ResponseHandle.render_error(self, message: validation_result[:message], status: validation_result[:status])
     end
 
-    # Kiểm tra xác thực email cho tất cả users
-    unless email_confirmed?(user)
-      return render_error(message: "Vui lòng xác thực email trước khi đăng nhập", status: :forbidden)
-    end
+    current_user = validation_result[:data][:user]
 
-    # Kiểm tra active chỉ cho admin
-    if user.role == "admin" && !user.active
-      return render_error(message: "Tài khoản admin chưa được kích hoạt", status: :forbidden)
-    end
+    # Generate tokens
+    tokens = UsersHandle.generate_user_tokens(current_user)
 
-    # Access token hết hạn sau 15 phút (dùng helper JsonWebToken để đồng bộ mã hóa/giải mã)
-    access_token = JsonWebToken.generate_access_token(user_id: user.id)
-    refresh_token = JsonWebToken.generate_refresh_token(user_id: user.id)
-    user.update!(refresh_token: refresh_token)
-
-    render_success(
+    ResponseHandle.render_success(
+      self,
       data: {
-        access_token: access_token,
-        refresh_token: refresh_token,
-        user: UserLoginSerializer.new(user),
+        access_token: tokens[:access_token],
+        refresh_token: tokens[:refresh_token],
+        user: UserLoginSerializer.new(current_user),
       },
       message: "Đăng nhập thành công",
     )
@@ -40,94 +30,62 @@ class V1::AuthController < ApplicationController
 
   def activate
     user = User.find(params[:id])
+    result = UsersHandle.activate_user(user, current_user)
 
-    return render_error(message: "Forbidden", status: :forbidden) unless current_user.role == "admin"
-
-    if user.update(active: true)
-      render_success(
-        data: { user: user },
-        message: "User activated",
+    if result[:success]
+      ResponseHandle.render_success(
+        self,
+        data: result[:data],
+        message: result[:message],
       )
     else
-      render_error(errors: user.errors.full_messages, status: :unprocessable_entity)
+      ResponseHandle.render_error(self, message: result[:message], status: result[:status])
     end
   end
 
   def register
     dto = UserRegistrationDto.new(user_params.to_h)
 
-    return render_error(errors: dto.errors.full_messages, status: :unprocessable_entity) unless dto.valid?
-
-    # Kiểm tra email trùng lặp (đơn giản) trước khi tạo
-    if User.exists?(email: dto.email.to_s.downcase)
-      return render_error(errors: ["Email đã tồn tại"], status: :unprocessable_entity)
+    # Validate registration data
+    validation_result = UsersHandle.validate_registration_data(dto)
+    unless validation_result[:success]
+      return ResponseHandle.render_error(self, message: validation_result[:message], status: validation_result[:status])
     end
 
-    user = User.new(
-      fullName: dto.full_name,
-      email: dto.email.to_s.downcase,
-      password: dto.password,
-      role: "user",
-    )
+    # Create new user
+    creation_result = UsersHandle.create_user_send_email(dto)
+    unless creation_result[:success]
+      return ResponseHandle.render_error(self, message: creation_result[:message], status: creation_result[:status])
+    end
 
-    if user.save
-      # Gửi email xác thực
-      token = generate_email_confirmation_token(user)
-      UserMailer.confirmation_email(user, token).deliver_later
+    current_user = creation_result[:data][:user]
 
-      render_success(
-        data: {
-          user: {
-            id: user.id,
-            email: user.email,
-            full_name: user.fullName,
-            role: user.role,
-          },
+    # Send confirmation email
+
+    ResponseHandle.render_success(
+      self,
+      data: {
+        user: {
+          id: current_user.id,
+          email: current_user.email,
+          full_name: current_user.fullName,
+          role: current_user.role,
         },
-        message: "Tạo user thành công, vui lòng kiểm tra email để xác thực tài khoản",
-        status: :created,
-      )
-    else
-      render_error(errors: user.errors.full_messages, status: :unprocessable_entity)
-    end
+      },
+      message: "Tạo user thành công, vui lòng kiểm tra email để xác thực tài khoản",
+      status: :created,
+    )
   end
 
   def confirm_email
     token = params[:token]
+    result = UsersHandle.process_email_confirmation(token)
 
-    if token.blank?
-      @success = false
-      @error_message = "Token không được cung cấp"
-      return render "auth/confirm_email", layout: false
-    end
+    @success = result[:success]
+    @error_message = result[:message]
 
-    user_id = decode_email_confirmation_token(token)
-
-    if user_id.nil?
-      @success = false
-      @error_message = "Token không hợp lệ hoặc đã hết hạn"
-      return render "auth/confirm_email", layout: false
-    end
-
-    user = User.find_by(id: user_id)
-    if user.nil?
-      @success = false
-      @error_message = "User không tồn tại"
-      return render "auth/confirm_email", layout: false
-    end
-
-    if email_confirmed?(user)
-      @success = true
-      @error_message = nil
-      return render "auth/confirm_email", layout: false
-    end
-
-    if user.update(confirm_email: true, confirm_email_at: Time.current, active: true)
-      @success = true
-      @error_message = nil
-    else
-      @success = false
-      @error_message = "Có lỗi xảy ra khi cập nhật trạng thái"
+    if result[:success] && result[:already_confirmed]
+      @error_message = "Email đã được xác thực trước đó"
     end
 
     Rails.logger.info "Rendering view with @success=#{@success}, @error_message=#{@error_message}"
@@ -136,52 +94,41 @@ class V1::AuthController < ApplicationController
 
   def refresh
     refresh_token = params[:refresh_token]
+    result = UsersHandle.refresh_user_tokens(refresh_token)
 
-    if refresh_token.blank?
-      return render_error(message: "Refresh token không được để trống", status: :bad_request)
-    end
-
-    begin
-      payload = JsonWebToken.decode_refresh_token(refresh_token)
-      user = User.find_by(id: payload[:user_id])
-
-      if user.nil?
-        return render_error(message: "User không tồn tại", status: :unauthorized)
-      end
-
-      # Tạo access token mới
-      access_token = JsonWebToken.generate_access_token({ user_id: user.id })
-
-      render_success(
+    if result[:success]
+      ResponseHandle.render_success(
+        self,
         data: {
-          access_token: access_token,
+          access_token: result[:data][:access_token],
           user: {
-            id: user.id,
-            email: user.email,
-            full_name: user.fullName,
-            role: user.role,
-            active: user.active,
+            id: result[:data][:user].id,
+            email: result[:data][:user].email,
+            full_name: result[:data][:user].fullName,
+            role: result[:data][:user].role,
+            active: result[:data][:user].active,
           },
         },
         message: "Refresh token thành công",
       )
-    rescue StandardError => e
-      # Nếu refresh token hết hạn hoặc không hợp lệ thì vào đây
-      render_error(message: e.message, status: :unauthorized)
+    else
+      ResponseHandle.render_error(self, message: result[:message], status: result[:status])
     end
   end
 
   def logout
-    # Xóa refresh_token trong DB để làm mất hiệu lực
-    if current_user.update(refresh_token: nil)
-      render_success(message: "Đăng xuất thành công")
+    result = UsersHandle.logout_user(current_user)
+
+    if result[:success]
+      ResponseHandle.render_success(self, message: "Đăng xuất thành công")
     else
-      render_error(errors: current_user.errors.full_messages, status: :unprocessable_entity)
+      ResponseHandle.render_error(self, message: result[:message], status: result[:status])
     end
   end
 
   def info
-    render_success(
+    ResponseHandle.render_success(
+      self,
       data: { user: current_user },
       message: "Lấy thông tin user thành công",
     )
@@ -195,39 +142,5 @@ class V1::AuthController < ApplicationController
 
   def login_params
     params.require(:user).permit(:email, :password)
-  end
-
-  # So sánh password nhập vào với hash trong DB
-  def authenticate_user(user, unencrypted_password)
-    return false if user.password.blank?
-
-    BCrypt::Password.new(user.password) == unencrypted_password
-  end
-
-  # Kiểm tra xem email đã được xác thực chưa
-  def email_confirmed?(user)
-    user.confirm_email == true
-  end
-
-  def decode_email_confirmation_token(token)
-    secret = Rails.application.secret_key_base
-
-    begin
-      decoded_token = JWT.decode(token, secret, true, { algorithm: "HS256" })
-      decoded_token[0]["user_id"]
-    rescue JWT::ExpiredSignature, JWT::DecodeError
-      nil
-    end
-  end
-
-  # Tạo token xác thực email cho user
-  def generate_email_confirmation_token(user)
-    payload = {
-      user_id: user.id,
-      exp: 15.minutes.from_now.to_i,
-    }
-    secret = Rails.application.secret_key_base
-
-    JWT.encode(payload, secret, "HS256")
   end
 end
